@@ -1,0 +1,49 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-13e71b5d2a68c6b2a120033286f6ecd8be907849",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "compilerType": "solc",
+  "toolVersions": {
+    "hardhat": "3.4.0"
+  },
+  "userSourceNameMap": {
+    "contracts/AyurChain.sol": "project/contracts/AyurChain.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/AyurChain.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.28;\r\n\r\ncontract AyurChain {\r\n\r\n    // Every stage in the supply chain is a \"Batch\"\r\n    struct Batch {\r\n        uint256 id;\r\n        string herbName;\r\n        string location;        // geo-tag: \"lat,long\"\r\n        string stage;           // \"harvested\", \"collected\", \"processed\", \"manufactured\"\r\n        address addedBy;        // wallet address of whoever added this\r\n        uint256 timestamp;\r\n        string notes;\r\n    }\r\n\r\n    // Store all batches\r\n    mapping(uint256 => Batch) public batches;\r\n    uint256 public batchCount;\r\n\r\n    // Events — emitted every time a new batch is added\r\n    event BatchAdded(\r\n        uint256 indexed id,\r\n        string herbName,\r\n        string stage,\r\n        address addedBy,\r\n        uint256 timestamp\r\n    );\r\n\r\n    // Add a new batch to the chain\r\n    function addBatch(\r\n        string memory _herbName,\r\n        string memory _location,\r\n        string memory _stage,\r\n        string memory _notes\r\n    ) public {\r\n        batchCount++;\r\n        batches[batchCount] = Batch({\r\n            id: batchCount,\r\n            herbName: _herbName,\r\n            location: _location,\r\n            stage: _stage,\r\n            addedBy: msg.sender,\r\n            timestamp: block.timestamp,\r\n            notes: _notes\r\n        });\r\n\r\n        emit BatchAdded(batchCount, _herbName, _stage, msg.sender, block.timestamp);\r\n    }\r\n\r\n    // Get a batch by ID\r\n    function getBatch(uint256 _id) public view returns (Batch memory) {\r\n        require(_id > 0 && _id <= batchCount, \"Batch does not exist\");\r\n        return batches[_id];\r\n    }\r\n\r\n    // Get total number of batches\r\n    function getTotalBatches() public view returns (uint256) {\r\n        return batchCount;\r\n    }\r\n}"
+      }
+    }
+  }
+}
