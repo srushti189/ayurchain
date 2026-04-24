@@ -1,8 +1,11 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import { ethers } from "ethers";
-import { readFileSync } from "fs";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { ethers } from 'ethers';
+import { readFileSync } from 'fs';
+import authRouter from './auth.js';
+import { authenticate, authorize } from './middleware.js';
+import './database.js';
 
 dotenv.config();
 
@@ -10,13 +13,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to local blockchain
+// Auth routes
+app.use('/auth', authRouter);
+
+// Connect to blockchain
 const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-const abi = JSON.parse(readFileSync("./contractABI.json", "utf8"));
+const abi = JSON.parse(readFileSync('./contractABI.json', 'utf8'));
 const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, abi, provider);
 
-// GET all batches
-app.get("/batches", async (req, res) => {
+// GET all batches — public, anyone can view
+app.get('/batches', async (req, res) => {
   try {
     const total = await contract.getTotalBatches();
     const batches = [];
@@ -38,8 +44,8 @@ app.get("/batches", async (req, res) => {
   }
 });
 
-// GET single batch by ID
-app.get("/batches/:id", async (req, res) => {
+// GET single batch — public
+app.get('/batches/:id', async (req, res) => {
   try {
     const batch = await contract.getBatch(req.params.id);
     res.json({
@@ -54,6 +60,11 @@ app.get("/batches/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// GET current user info — any logged in user
+app.get('/me', authenticate, (req, res) => {
+  res.json(req.user);
 });
 
 const PORT = process.env.PORT || 3001;
